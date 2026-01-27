@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payment Status</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      font-family: 'Poppins', sans-serif;
+      background: url('lg_image.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      text-shadow: 1px 1px 6px rgba(0,0,0,0.6);
+    }
+
+    .section {
+      margin-bottom: 40px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: 16px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      text-align: center;
+    }
+
+    th {
+      background-color: rgba(255, 255, 255, 0.2);
+      font-weight: 600;
+    }
+
+    td {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    a.back-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      text-decoration: none;
+      color: #ff4d4d;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    a.back-btn:hover {
+      background: rgba(255, 255, 255, 0.4);
+      color: #000;
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .count {
+      text-align: right;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+  </style>
+</head>
+<body>
+  <h2>💳 Payment Status</h2>
+
+  <div class="section">
+    <h3>✅ Students Who Paid</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Course Name</th>
+          <th>Fee Paid</th>
+        </tr>
+      </thead>
+      <tbody id="paidTableBody">
+        <!-- Rows will be populated dynamically -->
+      </tbody>
+    </table>
+    <div id="paidCount" class="count"></div>
+  </div>
+
+  <div class="section">
+    <h3>❌ Students Who Haven't Paid</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Course Name</th>
+          <th>Fee Paid</th>
+        </tr>
+      </thead>
+      <tbody id="unpaidTableBody">
+        <!-- Rows will be populated dynamically -->
+      </tbody>
+    </table>
+    <div id="unpaidCount" class="count"></div>
+  </div>
+
+  <div style="text-align: center;">
+    <a href="index.html" class="back-btn">← Back to Home</a>
+  </div>
+
+  <script>
+    // Fetch course registry data from backend
+    fetch('http://localhost:8080/courses/enrolled')
+      .then(response => response.json())
+      .then(data => {
+        const paidTable = document.getElementById("paidTableBody");
+        const unpaidTable = document.getElementById("unpaidTableBody");
+        const paidCount = document.getElementById("paidCount");
+        const unpaidCount = document.getElementById("unpaidCount");
+
+        let paid = 0;
+        let unpaid = 0;
+
+        data.forEach(reg => {
+          const row = `
+            <tr>
+              <td>${reg.id}</td>
+              <td>${reg.name}</td>
+              <td>${reg.emailId}</td>
+              <td>${reg.courseName}</td>
+              <td>${reg.feepayment ? 'Yes' : 'No'}</td>
+            </tr>
+          `;
+
+          if (reg.feepayment) {
+            paidTable.innerHTML += row;
+            paid++;
+          } else {
+            unpaidTable.innerHTML += row;
+            unpaid++;
+          }
+        });
+
+        paidCount.textContent = `Total Paid: ${paid}`;
+        unpaidCount.textContent = `Total Not Paid: ${unpaid}`;
+      })
+      .catch(error => {
+        console.error('Error fetching payment data:', error);
+      });
+  </script>
+</body>
+</html>

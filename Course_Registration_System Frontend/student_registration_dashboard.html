@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Registration</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('rg_image.jpg') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        form {
+            background: rgba(255, 255, 255, 0.25);
+            padding: 40px 50px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        h2 {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        label {
+            color: #fefefe;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 6px;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+            outline: none;
+            box-shadow: inset 1px 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        input::placeholder {
+            color: #777;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+            transform: scale(1.03);
+        }
+
+        button:active {
+            transform: scale(0.97);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .back-button {
+            margin-top: 20px;
+            max-width: 420px;
+            width: 100%;
+        }
+
+        .back-button a {
+            text-decoration: none;
+            display: block;
+        }
+
+        .back-button button {
+            background: rgba(255, 255, 255, 0.3);
+            color: #000;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+        }
+
+        .back-button button:hover {
+            background: rgba(255, 255, 255, 0.5);
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+<form id="registrationForm" action="http://localhost:8080/courses/registerStudent" method="post">
+    <h2>Student Enrollment</h2>
+
+    <label for="name">Enter Your Name:</label>
+    <input type="text" name="name" id="name" placeholder="Enter your name" required>
+
+    <label for="emailId">Enter your Email ID:</label>
+    <input type="email" name="emailId" id="emailId" placeholder="Enter your mail id" required>
+
+    <label for="course">Choose a Course:</label>
+    <select id="course" name="courseName" required>
+        <option disabled selected>Loading courses...</option>
+    </select>
+
+    <label for="courseFee">Course Fee:</label>
+    <input type="text" id="courseFee" placeholder="Course fee will appear here" readonly>
+
+    <label for="amount">Enter Amount(Cash):</label>
+    <input type="number" id="amount" placeholder="Enter amount paid" required>
+
+    <!-- Hidden field to send true/false to backend -->
+    <input type="hidden" name="feepayment" id="feepayment">
+
+    <button type="submit">Submit</button>
+</form>
+
+<div class="back-button">
+    <a href="student_dashboard.html"><button type="button">← Back to Home</button></a>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let courseMap = {};
+
+        fetch('http://localhost:8080/courses')
+            .then(response => response.json())
+            .then(courses => {
+                const select = document.getElementById('course');
+                select.innerHTML = '';
+
+                courses.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course.courseName;
+                    option.textContent = course.courseName;
+                    select.appendChild(option);
+
+                    courseMap[course.courseName] = course.coursefee;
+                });
+
+                select.addEventListener('change', function () {
+                    const selectedCourse = this.value;
+                    document.getElementById('courseFee').value = courseMap[selectedCourse] || '';
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching courses:', error);
+                const select = document.getElementById('course');
+                select.innerHTML = '<option disabled>Error loading courses</option>';
+            });
+
+        document.getElementById('registrationForm').addEventListener('submit', function (e) {
+            e.preventDefault();  // Prevent form submission for now
+
+            const fee = parseFloat(document.getElementById('courseFee').value);
+            const amount = parseFloat(document.getElementById('amount').value);
+
+            let confirmationMessage = '';
+
+            if (isNaN(fee) || isNaN(amount)) {
+                confirmationMessage = 'Please enter valid amounts for fee and payment.';
+            } else if (amount === fee) {
+                confirmationMessage = 'The entered amount is correct. Do you want to proceed with the registration?';
+            } else if (amount < fee) {
+                confirmationMessage = `The entered amount is lesser than the course fee. The remaining amount is ${fee - amount}. Do you want to proceed?`;
+            } else if (amount > fee) {
+                confirmationMessage = `The entered amount is greater than the course fee. The extra amount is ${amount - fee}. Do you want to proceed?`;
+            }
+
+            const isConfirmed = confirm(confirmationMessage);
+
+            if (isConfirmed) {
+                // Set the hidden field for fee payment status
+                document.getElementById('feepayment').value = (amount >= fee);
+
+                // Submit the form
+                this.submit();
+            } else {
+                // If not confirmed, you can reset the amount or handle accordingly
+                alert("Please correct the payment details.");
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

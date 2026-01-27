@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Update Course</title>
+  <style>
+    html {
+      scroll-behavior: smooth;  /* Added smooth scrolling */
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: url('up_image.jpg') no-repeat center center fixed;
+        background-size: cover;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    .container {
+        background: rgba(255, 255, 255, 0.25);
+        padding: 40px 50px;
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        max-width: 600px;
+        width: 90%;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin: 50px auto;
+    }
+
+    h2 {
+      color: #333;
+      font-size: 30px;
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+
+    label {
+      display: block;
+      margin: 15px 0 8px;
+      font-weight: 600;
+      color: #333;
+      text-align: left;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      background: rgba(255, 255, 255, 0.85);
+      color: #333;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #50c9c3, #2962ff);
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #2962ff, #50c9c3);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    #deleteBtn {
+      background: linear-gradient(135deg, #ff6b6b, #ff4757);
+    }
+
+    #deleteBtn:hover {
+      background: linear-gradient(135deg, #ff4757, #ff6b6b);
+    }
+
+    #response {
+      margin-top: 18px;
+      text-align: center;
+      font-weight: 600;
+      color: green;
+    }
+
+    #backBtn {
+      margin-top: 25px;
+      background: linear-gradient(135deg, #50c9c3, #2962ff);
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    #backBtn:hover {
+      background: linear-gradient(135deg, #2962ff, #50c9c3);
+      transform: scale(1.03);
+    }
+
+    #backBtn:active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Update Course Details</h2>
+    <form id="updateCourseForm">
+      <label for="courseId">Course ID</label>
+      <input type="number" id="courseId" placeholder="Enter Course ID" required>
+      <button type="button" id="fetchCourseBtn">Fetch Course Details</button>
+
+      <label for="courseName">Course Name</label>
+      <input type="text" id="courseName" placeholder="Enter Course Name" required>
+
+      <label for="trainer">Trainer</label>
+      <input type="text" id="trainer" placeholder="Enter Trainer Name" required>
+
+      <label for="duration">Duration</label>
+      <input type="text" id="duration" placeholder="Enter Duration" required>
+
+      <label for="coursefee">Course Fee</label>
+      <input type="text" id="coursefee" placeholder="Enter Course Fee" required>
+
+      <button type="submit">Update</button>
+      <button type="button" id="deleteBtn">Delete Course</button>
+    </form>
+
+    <div id="response"></div>
+    <a href="index.html" id="backBtn">&larr; Back to Home</a>
+  </div>
+
+  <script>
+    document.getElementById("fetchCourseBtn").addEventListener("click", function () {
+      const courseId = document.getElementById("courseId").value;
+      if (!courseId) {
+        document.getElementById("response").innerText = "Please enter a Course ID.";
+        return;
+      }
+
+      fetch(`http://localhost:8080/course/${courseId}`)
+        .then(response => {
+          if (!response.ok) throw new Error("Course not found");
+          return response.json();
+        })
+        .then(course => {
+          document.getElementById("courseName").value = course.courseName;
+          document.getElementById("trainer").value = course.trainer;
+          document.getElementById("duration").value = course.duration;
+          document.getElementById("coursefee").value = course.coursefee || '';
+          document.getElementById("response").innerText = "";
+        })
+        .catch(error => {
+          console.error("Error fetching course:", error);
+          document.getElementById("response").innerText = "Course not found or error occurred.";
+          document.getElementById("courseName").value = "";
+          document.getElementById("trainer").value = "";
+          document.getElementById("duration").value = "";
+          document.getElementById("coursefee").value = "";
+        });
+    });
+
+    document.getElementById("updateCourseForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const courseId = document.getElementById("courseId").value;
+      const courseName = document.getElementById("courseName").value;
+      const trainer = document.getElementById("trainer").value;
+      const duration = document.getElementById("duration").value;
+      const coursefee = document.getElementById("coursefee").value;
+
+      fetch(`http://localhost:8080/course/updatecourse/${courseId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          courseId: courseId, 
+          courseName: courseName, 
+          trainer: trainer, 
+          duration: duration,
+          coursefee: coursefee
+        })
+      })
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("response").innerText = data;
+        document.getElementById("response").style.color = "green";
+      })
+      .catch(error => {
+        document.getElementById("response").innerText = "Update failed. Please try again.";
+        document.getElementById("response").style.color = "red";
+        console.error("Error:", error);
+      });
+    });
+
+    document.getElementById("deleteBtn").addEventListener("click", function () {
+      const courseId = document.getElementById("courseId").value;
+      if (!courseId) {
+        document.getElementById("response").innerText = "Enter Course ID to delete.";
+        document.getElementById("response").style.color = "red";
+        return;
+      }
+
+      if (!confirm("Are you sure you want to delete this course?")) return;
+
+      fetch(`http://localhost:8080/course/delete/${courseId}`, {
+        method: "DELETE"
+      })
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("response").innerText = data;
+        document.getElementById("response").style.color = "green";
+        document.getElementById("courseName").value = "";
+        document.getElementById("trainer").value = "";
+        document.getElementById("duration").value = "";
+        document.getElementById("coursefee").value = "";
+      })
+      .catch(error => {
+        document.getElementById("response").innerText = "Delete failed. Please try again.";
+        document.getElementById("response").style.color = "red";
+        console.error("Error:", error);
+      });
+    });
+  </script>
+</body>
+</html>

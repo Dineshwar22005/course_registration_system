@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('login_page_image.jpg') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.55);
+            padding: 40px 50px;
+            border-radius: 20px;
+            backdrop-filter: blur(1px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h2 {
+            color: #2d2d2d;
+            margin-bottom: 30px;
+            font-size: 26px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            outline: none;
+            box-shadow: inset 1px 1px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #2d2d2d;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #444;
+            transform: scale(1.02);
+        }
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+            color: red;
+        }
+
+        .role-selection {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .role-selection label {
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .role-selection input[type="radio"] {
+            display: none;
+        }
+
+        .role-selection input[type="radio"] + .role-label {
+            position: relative;
+            padding-left: 35px;
+            cursor: pointer;
+        }
+
+        .role-selection input[type="radio"] + .role-label::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            background-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .role-selection input[type="radio"]:checked + .role-label::before {
+            background-color: #2d2d2d;
+            border-color: #2d2d2d;
+        }
+
+        .role-selection input[type="radio"]:checked + .role-label {
+            color: #2d2d2d;
+        }
+
+        .role-selection input[type="radio"]:hover + .role-label::before {
+            border-color: #555;
+        }
+
+        .role-selection input[type="radio"]:checked + .role-label::after {
+            content: '✓';
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Enter Username" required>
+    <input type="password" id="password" placeholder="Enter Password" required>
+
+    <div class="role-selection">
+        <label>
+            <input type="radio" name="role" value="admin" id="roleAdmin">
+            <span class="role-label">Admin</span>
+        </label>
+        <label>
+            <input type="radio" name="role" value="student" id="roleStudent">
+            <span class="role-label">Other</span>
+        </label>
+    </div>
+
+    <button onclick="login()">Login</button>
+    <button onclick="window.location.href='signup.html'" style="margin-top: 10px; background-color: #fff; color: #2d2d2d; border: 2px solid #2d2d2d;">
+        Sign Up
+    </button>
+
+    <div id="message"></div>
+</div>
+
+<script>
+    function login() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const role = document.querySelector('input[name="role"]:checked') ? document.querySelector('input[name="role"]:checked').value : "";
+
+        if (!role) {
+            document.getElementById("message").innerText = "Please select a role (Admin or Other).";
+            return;
+        }
+
+        if (!username || !password) {
+            document.getElementById("message").innerText = "Username and password are required.";
+            return;
+        }
+
+        fetch("http://localhost:8080/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username, password, role })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Server error. Please try again.");
+            }
+            return response.text();
+        })
+        .then(message => {
+            if (message === "true") {
+                if (role === "admin") {
+                    window.location.href = "index.html";
+                } else {
+                    window.location.href = "student_dashboard.html";
+                }
+            } else {
+                document.getElementById("message").innerText = "Invalid credentials.";
+            }
+        })
+        .catch(error => {
+            document.getElementById("message").innerText = error.message;
+        });
+    }
+</script>
+
+</body>
+</html>

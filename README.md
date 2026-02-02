@@ -14,3 +14,4 @@ A full stack Course Registration System with separate frontend and backend modul
 - HR Module
 - Home Page
 - Login & Authentication
+- 
